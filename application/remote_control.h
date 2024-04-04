@@ -55,12 +55,13 @@
 #define KEY_PRESSED_OFFSET_V            ((uint16_t)1 << 14)
 #define KEY_PRESSED_OFFSET_B            ((uint16_t)1 << 15)
 /* ----------------------- Data Struct ------------------------------------- */
+/*定义了一个名为RC_ctrl_t的结构体，其中包含了三个子结构体：rc、mouse和key*/
 typedef __packed struct
 {
         __packed struct
         {
-                int16_t ch[5];
-                char s[2];
+                int16_t ch[5];//五个通道11位数据[1684,1024,364]
+                char s[2];//拨杆2位数据[3,1]
         } rc;
         __packed struct
         {

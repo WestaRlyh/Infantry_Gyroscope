@@ -168,7 +168,7 @@ void referee_unpack_fifo_data(void)
           if ( verify_CRC16_check_sum(p_obj->protocol_packet, REF_HEADER_CRC_CMDID_LEN + p_obj->data_len) )
           {
             referee_data_solve(p_obj->protocol_packet);
-          }
+              }
         }
       }break;
 

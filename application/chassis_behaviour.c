@@ -86,6 +86,7 @@
 #include "arm_math.h"
 
 #include "gimbal_behaviour.h"
+#include "referee.h"
 
 /**
   * @brief          when chassis behaviour mode is CHASSIS_ZERO_FORCE, the function is called
@@ -260,9 +261,14 @@ void chassis_behaviour_mode_set(chassis_move_t *chassis_move_mode)
 			chassis_move_mode->chassis_spin_ramp_add = 0.5;  //设置小陀螺缓启动增量
 		}
 		else if (switch_is_up(chassis_move_mode->chassis_RC->rc.s[CHASSIS_MODE_CHANNEL]))
-		{
-			chassis_behaviour_mode = CHASSIS_NO_MOVE;//
-		}
+		{//改写上位躲避打击模式
+      if(!robot_hurt_t.hurt_type)
+      chassis_behaviour_mode = CHASSIS_REVOLVE;
+			else
+      chassis_behaviour_mode = CHASSIS_NO_MOVE;
+     chassis_move_mode->chassis_spin_ramp_add = 0.5;  //设置小陀螺缓启动增量
+		
+    }
 	}
 	if(chassis_move_mode->chassis_RC->key.v & CHASSIS_REVOLVE_KEY)//Q
 	{
@@ -430,13 +436,16 @@ static void chassis_zero_force_control(fp32 *vx_can_set, fp32 *vy_can_set, fp32 
   * @param[in]      chassis_move_rc_to_vector底盘数据
   * @retval         返回空
   */
-
+//---------上位-------
 static void chassis_no_move_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector)
 {
     if (vx_set == NULL || vy_set == NULL || wz_set == NULL || chassis_move_rc_to_vector == NULL)
     {
         return;
     }
+//  chassis_rc_to_control_vector(vx_set, vy_set, chassis_move_rc_to_vector);
+//	ramp_calc(&chassis_move_rc_to_vector->chassis_spin_ramp, chassis_move_rc_to_vector->chassis_spin_ramp_add);
+//	*wz_set = chassis_move_rc_to_vector->chassis_spin_ramp.out;
     *vx_set = 0.0f;
     *vy_set = 0.0f;
     *wz_set = 0.0f;
@@ -460,7 +469,7 @@ static void chassis_no_move_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, ch
   * @param[in]      chassis_move_rc_to_vector底盘数据
   * @retval         返回空
   */
-
+//-------中位----------
 static void chassis_infantry_follow_gimbal_yaw_control(fp32 *vx_set, fp32 *vy_set, fp32 *angle_set, chassis_move_t *chassis_move_rc_to_vector)
 {
     if (vx_set == NULL || vy_set == NULL || angle_set == NULL || chassis_move_rc_to_vector == NULL)
@@ -537,7 +546,7 @@ static void chassis_no_follow_yaw_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_s
     chassis_rc_to_control_vector(vx_set, vy_set, chassis_move_rc_to_vector);
     *wz_set = 0;//-CHASSIS_WZ_RC_SEN * chassis_move_rc_to_vector->chassis_RC->rc.ch[CHASSIS_WZ_CHANNEL];
 }
-//自添加
+//自添加--------下位---------------
 static void chassis_revolve_control(fp32 *vx_set, fp32 *vy_set, fp32 *wz_set, chassis_move_t *chassis_move_rc_to_vector)
 {
     if (vx_set == NULL || vy_set == NULL || wz_set == NULL || chassis_move_rc_to_vector == NULL)
