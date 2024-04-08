@@ -30,6 +30,7 @@
 #include "chassis_power_control.h"
 
 #include "bsp_usart.h"
+#include "referee.h"
 
 #define rc_deadband_limit(input, output, dealine)        \
     {                                                    \
@@ -323,12 +324,13 @@ static void chassis_mode_change_control_transit(chassis_move_t *chassis_move_tra
     {
         return;
     }
-
+  //改1
     //change to follow gimbal angle mode
     //切入跟随云台模式
     if ((chassis_move_transit->last_chassis_mode != CHASSIS_VECTOR_FOLLOW_GIMBAL_YAW) && chassis_move_transit->chassis_mode == CHASSIS_VECTOR_FOLLOW_GIMBAL_YAW)
     {
-        chassis_move_transit->chassis_relative_angle_set = 0.0f;
+ //       chassis_move_transit->chassis_relative_angle_set = 0.0f;//该参数值始终是0
+          chassis_move_transit->chassis_yaw_set = chassis_move_transit->chassis_yaw;
     }
     //change to follow chassis yaw angle
     //切入跟随底盘角度模式
@@ -520,20 +522,40 @@ static void chassis_set_contorl(chassis_move_t *chassis_move_control)
         chassis_move_control->vx_set = fp32_constrain(chassis_move_control->vx_set, chassis_move_control->vx_min_speed, chassis_move_control->vx_max_speed);
         chassis_move_control->vy_set = fp32_constrain(chassis_move_control->vy_set, chassis_move_control->vy_min_speed, chassis_move_control->vy_max_speed);
     }
+    //改2
     else if (chassis_move_control->chassis_mode == CHASSIS_VECTOR_FOLLOW_CHASSIS_YAW)
     {
         fp32 delat_angle = 0.0f;
         //set chassis yaw angle set-point
-        //设置底盘控制的角度
-        chassis_move_control->chassis_yaw_set = rad_format(angle_set);
-        delat_angle = rad_format(chassis_move_control->chassis_yaw_set - chassis_move_control->chassis_yaw);
+        //设置底盘控制的角度使得控制方向为云台方向
+        fp32 sin_yaw = 0.0f, cos_yaw = 0.0f;
+        sin_yaw = arm_sin_f32(-chassis_move_control->chassis_yaw_motor->relative_angle);//相对角度
+        cos_yaw = arm_cos_f32(-chassis_move_control->chassis_yaw_motor->relative_angle);
+        chassis_move_control->vx_set = cos_yaw * vx_set + sin_yaw * vy_set;
+        chassis_move_control->vy_set = -sin_yaw * vx_set + cos_yaw * vy_set;
+
+        chassis_move_control->chassis_yaw_set = rad_format(angle_set);//遥控器数据
+        if(robot_hurt_t.hurt_type==0||robot_hurt_t.hurt_type==5)
+          delat_angle = rad_format(chassis_move_control->chassis_yaw_set - chassis_move_control->chassis_yaw+0.5);//测试版本
+        else
+          delat_angle = rad_format(chassis_move_control->chassis_yaw_set - chassis_move_control->chassis_yaw);//此时云台与底盘运动独立，但是小陀螺切换后会回到原位
+
+   //    chassis_move_control->chassis_yaw_set-=0.52;//转30°
+
+   //    if(chassis_move_control->chassis_yaw_set<-3.14)
+   //         chassis_move_control->chassis_yaw_set=3.14;        
+   //     }
+      
+ //     delat_angle = rad_format(chassis_move_control->chassis_yaw_set - chassis_move_control->chassis_yaw);
+ //       delat_angle=0;//打击之后不停止旋转，此时云台旋转后底盘会又莫名的速度旋转
         //calculate rotation speed
         //计算旋转的角速度
-        chassis_move_control->wz_set = PID_calc(&chassis_move_control->chassis_angle_pid, 0.0f, delat_angle);
+//        chassis_move_control->wz_set = PID_calc(&chassis_move_control->chassis_angle_pid, angle_set, delat_angle);
+        chassis_move_control->wz_set = -PID_calc(&chassis_move_control->chassis_angle_pid, angle_set, delat_angle);
         //speed limit
         //速度限幅
-        chassis_move_control->vx_set = fp32_constrain(vx_set, chassis_move_control->vx_min_speed, chassis_move_control->vx_max_speed);
-        chassis_move_control->vy_set = fp32_constrain(vy_set, chassis_move_control->vy_min_speed, chassis_move_control->vy_max_speed);
+        chassis_move_control->vx_set = fp32_constrain(chassis_move_control->vx_set, chassis_move_control->vx_min_speed, chassis_move_control->vx_max_speed);
+        chassis_move_control->vy_set = fp32_constrain(chassis_move_control->vy_set, chassis_move_control->vy_min_speed, chassis_move_control->vy_max_speed);
     }
     else if (chassis_move_control->chassis_mode == CHASSIS_VECTOR_NO_FOLLOW_YAW)
     {
@@ -629,7 +651,7 @@ static void chassis_control_loop(chassis_move_t *chassis_move_control_loop)
     //calculate the max speed in four wheels, limit the max speed
     //计算轮子控制最大速度，并限制其最大速度
     for (i = 0; i < 4; i++)
-    {
+    {     
         chassis_move_control_loop->motor_chassis[i].speed_set = wheel_speed[i];
         temp = fabs(chassis_move_control_loop->motor_chassis[i].speed_set);
         if (max_vector < temp)

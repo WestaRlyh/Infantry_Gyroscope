@@ -261,13 +261,28 @@ void chassis_behaviour_mode_set(chassis_move_t *chassis_move_mode)
 			chassis_move_mode->chassis_spin_ramp_add = 0.5;  //设置小陀螺缓启动增量
 		}
 		else if (switch_is_up(chassis_move_mode->chassis_RC->rc.s[CHASSIS_MODE_CHANNEL]))
-		{//改写上位躲避打击模式
-      if(!robot_hurt_t.hurt_type)
+		{
+    /*---------改写上位躲避打击模式-------------------------*/
+    /*
+      if(robot_hurt_t.hurt_type==0||robot_hurt_t.hurt_type==5)
+      {
       chassis_behaviour_mode = CHASSIS_REVOLVE;
+      chassis_move_mode->chassis_spin_ramp_add = 0.3;  //设置小陀螺缓启动增量
+      }
 			else
-      chassis_behaviour_mode = CHASSIS_NO_MOVE;
-     chassis_move_mode->chassis_spin_ramp_add = 0.5;  //设置小陀螺缓启动增量
-		
+    {
+    	chassis_move_mode->chassis_spin_ramp_add = -0.2;  //设置小陀螺缓停止增量
+			if(chassis_move_mode->chassis_spin_ramp.out <= CHASSIS_WZ_REVOLVE/1.5)  //若小陀螺速度已减至足够小
+			{
+				chassis_behaviour_mode = CHASSIS_ENGINEER_FOLLOW_CHASSIS_YAW;  //则退出小陀螺模式
+				chassis_move_mode->chassis_spin_ramp.out = 0;  //清空输出
+			}
+    }
+    */
+    /*------------改写给定角度旋转-----------*/
+    
+  	chassis_behaviour_mode = CHASSIS_ENGINEER_FOLLOW_CHASSIS_YAW;  //则退出小陀螺模式
+    
     }
 	}
 	if(chassis_move_mode->chassis_RC->key.v & CHASSIS_REVOLVE_KEY)//Q
@@ -281,7 +296,7 @@ void chassis_behaviour_mode_set(chassis_move_t *chassis_move_mode)
 		chassis_move_mode->chassis_spin_ramp_add = -0.3;  //设置小陀螺缓停止增量
 		if(chassis_move_mode->chassis_spin_ramp.out <= CHASSIS_WZ_REVOLVE/1.5)  //若小陀螺速度已减至足够小
 		{
-			chassis_behaviour_mode = CHASSIS_INFANTRY_FOLLOW_GIMBAL_YAW;  //则退出小陀螺模式
+			chassis_behaviour_mode = CHASSIS_NO_FOLLOW_YAW;  //则退出小陀螺模式
 			chassis_move_mode->chassis_spin_ramp.out = 0;  //清空输出
 			chassis_move_mode->keyBoardAndMouseHasChanged=1;
 		}	
@@ -369,7 +384,7 @@ void chassis_behaviour_control_set(fp32 *vx_set, fp32 *vy_set, fp32 *angle_set, 
     {
         chassis_infantry_follow_gimbal_yaw_control(vx_set, vy_set, angle_set, chassis_move_rc_to_vector);
     }
-    else if (chassis_behaviour_mode == CHASSIS_ENGINEER_FOLLOW_CHASSIS_YAW)	//工程底盘控制底盘，目前没用
+    else if (chassis_behaviour_mode == CHASSIS_ENGINEER_FOLLOW_CHASSIS_YAW)	//工程底盘控制底盘，修改上位模式
     {
         chassis_engineer_follow_chassis_yaw_control(vx_set, vy_set, angle_set, chassis_move_rc_to_vector);
     }

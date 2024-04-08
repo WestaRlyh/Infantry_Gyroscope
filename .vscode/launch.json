@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "e:/1_COMPETITION/1.RoboMaster_File/Paper/Code/NBU_NEW_infantry/application",
-      "program": "e:/1_COMPETITION/1.RoboMaster_File/Paper/Code/NBU_NEW_infantry/application/build/Debug/outDebug",
+      "cwd": "f:/git/NBU_NEW_infantry/application",
+      "program": "f:/git/NBU_NEW_infantry/application/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

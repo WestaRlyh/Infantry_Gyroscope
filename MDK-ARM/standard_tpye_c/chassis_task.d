@@ -76,3 +76,5 @@ standard_tpye_c\chassis_task.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ha
 standard_tpye_c\chassis_task.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h
 standard_tpye_c\chassis_task.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
 standard_tpye_c\chassis_task.o: ../bsp/boards/bsp_usart.h
+standard_tpye_c\chassis_task.o: ..\application\referee.h
+standard_tpye_c\chassis_task.o: ../application/protocol/protocol.h

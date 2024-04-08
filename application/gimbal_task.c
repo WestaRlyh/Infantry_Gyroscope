@@ -716,10 +716,10 @@ static void gimbal_feedback_update(gimbal_control_t *feedback_update)
     //云台数据更新
     feedback_update->gimbal_pitch_motor.absolute_angle = *(feedback_update->gimbal_INT_angle_point + INS_PITCH_ADDRESS_OFFSET);
 
-#if PITCH_TURN
+#if PITCH_TURN//俯仰轴正转
     feedback_update->gimbal_pitch_motor.relative_angle = -motor_ecd_to_angle_change(feedback_update->gimbal_pitch_motor.gimbal_motor_measure->ecd,
                                                                                           feedback_update->gimbal_pitch_motor.offset_ecd);
-#else
+#else//俯仰轴反转
 
     feedback_update->gimbal_pitch_motor.relative_angle = motor_ecd_to_angle_change(feedback_update->gimbal_pitch_motor.gimbal_motor_measure->ecd,
                                                                                           feedback_update->gimbal_pitch_motor.offset_ecd);
