@@ -329,8 +329,8 @@ static void chassis_mode_change_control_transit(chassis_move_t *chassis_move_tra
     //切入跟随云台模式
     if ((chassis_move_transit->last_chassis_mode != CHASSIS_VECTOR_FOLLOW_GIMBAL_YAW) && chassis_move_transit->chassis_mode == CHASSIS_VECTOR_FOLLOW_GIMBAL_YAW)
     {
- //       chassis_move_transit->chassis_relative_angle_set = 0.0f;//该参数值始终是0
-          chassis_move_transit->chassis_yaw_set = chassis_move_transit->chassis_yaw;
+           chassis_move_transit->chassis_relative_angle_set = 0.0f;//该参数值始终是0
+ //         chassis_move_transit->chassis_yaw_set = chassis_move_transit->chassis_yaw;
     }
     //change to follow chassis yaw angle
     //切入跟随底盘角度模式
@@ -540,18 +540,12 @@ static void chassis_set_contorl(chassis_move_t *chassis_move_control)
         else
           delat_angle = rad_format(chassis_move_control->chassis_yaw_set - chassis_move_control->chassis_yaw);//此时云台与底盘运动独立，但是小陀螺切换后会回到原位
 
-   //    chassis_move_control->chassis_yaw_set-=0.52;//转30°
-
-   //    if(chassis_move_control->chassis_yaw_set<-3.14)
-   //         chassis_move_control->chassis_yaw_set=3.14;        
-   //     }
-      
  //     delat_angle = rad_format(chassis_move_control->chassis_yaw_set - chassis_move_control->chassis_yaw);
  //       delat_angle=0;//打击之后不停止旋转，此时云台旋转后底盘会又莫名的速度旋转
         //calculate rotation speed
         //计算旋转的角速度
 //        chassis_move_control->wz_set = PID_calc(&chassis_move_control->chassis_angle_pid, angle_set, delat_angle);
-        chassis_move_control->wz_set = -PID_calc(&chassis_move_control->chassis_angle_pid, angle_set, delat_angle);
+        chassis_move_control->wz_set = PID_calc(&chassis_move_control->chassis_angle_pid, angle_set, delat_angle);
         //speed limit
         //速度限幅
         chassis_move_control->vx_set = fp32_constrain(chassis_move_control->vx_set, chassis_move_control->vx_min_speed, chassis_move_control->vx_max_speed);

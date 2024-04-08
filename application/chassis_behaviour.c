@@ -281,7 +281,7 @@ void chassis_behaviour_mode_set(chassis_move_t *chassis_move_mode)
     */
     /*------------改写给定角度旋转-----------*/
     
-  	chassis_behaviour_mode = CHASSIS_ENGINEER_FOLLOW_CHASSIS_YAW;  //则退出小陀螺模式
+  	chassis_behaviour_mode = CHASSIS_ENGINEER_FOLLOW_CHASSIS_YAW;  //低功耗小陀螺模式
     
     }
 	}
