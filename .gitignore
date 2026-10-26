@@ -1,0 +1,23 @@
+# Keil MDK 编译输出
+MDK-ARM/standard_tpye_c/
+
+# Keil 用户界面、调试和运行时生成配置
+MDK-ARM/*.uvguix.*
+MDK-ARM/*.uvoptx
+MDK-ARM/DebugConfig/
+MDK-ARM/RTE/_standard_robot/
+MDK-ARM/*.lst
+
+# 本地编辑器配置
+.vscode/
+
+# 临时文件
+tmp/
+
+# 根目录遗留的实验数据副本
+/angle_change_*.csv
+/ploat.mlx
+
+# 常见临时文件
+*.bak
+*.user
