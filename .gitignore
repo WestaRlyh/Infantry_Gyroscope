@@ -13,11 +13,10 @@ MDK-ARM/*.lst
 
 # 临时文件
 tmp/
+*.bak
+*.user
 
 # 根目录遗留的实验数据副本
 /angle_change_*.csv
 /ploat.mlx
 
-# 常见临时文件
-*.bak
-*.user

@@ -1,118 +1,112 @@
 # Infantry_Gyroscope
 
-基于 RoboMaster 步兵机器人底盘的控制工程，重点实现两类相对独立的运动模式：
+本项目面向 RoboMaster 步兵机器人底盘控制，围绕两种相互独立的运动模式展开：
 
-- **小陀螺模式**：底盘持续自转，云台独立稳向，用于移动、观察和持续防御。
-- **冲击摆动模式**：检测到装甲受击后，底盘短时旋转约 30°，改变受击面，同时保持云台朝向和底盘平移方向。
+- **小陀螺模式**：底盘持续旋转，云台通过独立控制保持稳定指向，用于机动、观察和持续防御。
+- **冲击摆动模式**：检测到装甲受击后，底盘短时旋转约 30°，主动切换受击面，同时保持云台朝向并维持底盘平移能力。
 
-项目的控制思想：基于姿态解算使底盘不跟随云台；麦克纳姆轮负责全向运动和躲避弹丸，导电滑环实现底盘与云台的电源、信号解耦，云台负责保持视野和运动朝向。
+整体控制架构以姿态解算为基础，使底盘运动与云台指向相互解耦。麦克纳姆轮实现全向运动与弹丸规避，导电滑环负责底盘和云台之间的电源与信号传输，云台负责保持稳定视野与目标方向。
 
 ## 1. 系统架构
 
-![论文图2：整车硬件框图与部分裁判系统结构](docs/paper_fig2_hardware_architecture.png)
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <img src="docs/paper_fig2_hardware_architecture.png" alt="整车硬件框图与部分裁判系统结构" width="100%"><br>
+      <sub>整车硬件框图与部分裁判系统结构</sub>
+    </td>
+    <td align="center" width="50%">
+      <img src="docs/paper_fig3_coordinate_system.png" alt="底盘云台坐标系相对位置" width="100%"><br>
+      <sub>底盘云台坐标系相对位置</sub>
+    </td>
+  </tr>
+</table>
 
-图源：论文图 2。系统由五层组成：
+系统由五层组成：
 
-- **硬件层**：四轮麦克纳姆底盘、Yaw/Pitch 云台、导电滑环和装甲/射击机构。
-- **硬件配置层**：`standard_robot.ioc` 配置 STM32F407 的 CAN、UART、SPI、I2C、定时器、DMA、USB 和 FreeRTOS。
-- **驱动层**：STM32 HAL、CMSIS、BSP 和 BMI088/IST8310 等传感器驱动。
+- **硬件层**：四轮麦克纳姆底盘、Yaw/Pitch 云台、导电滑环及装甲和射击机构。
+- **配置层**：通过 `standard_robot.ioc` 配置 STM32F407 的 CAN、UART、SPI/I2C、定时器、DMA、USB 和 FreeRTOS。
+- **驱动层**：STM32 HAL、CMSIS、BSP，以及 BMI088、IST8310 等传感器驱动。
 - **控制层**：PID、AHRS、麦轮运动学、CAN 电机通信和功率控制。
 - **任务层**：底盘、云台、IMU、裁判系统、射击和故障检测任务。
 
-底盘和云台通过滑环实现电源与信号解耦，底盘负责运动和防御，云台负责稳向、观察和反击。
-
-### 1.1 坐标系与控制闭环
-
-![论文图3：底盘云台坐标系相对位置](docs/paper_fig3_coordinate_system.png)
-
-图源：论文图 3。底盘坐标系以前进方向为 X 轴、左移方向为 Y 轴，云台与底盘的相对角为 `theta`。
-
-核心闭环为：
+底盘坐标系以前进方向为 X 轴、左移方向为 Y 轴，云台与底盘的相对角记为 `theta`。控制闭环为：
 
 ```text
-遥控器/裁判数据 -> 坐标变换 -> 麦轮速度解算
-                 -> 电机 PID/CAN -> 姿态与电机反馈
+遥控器/裁判系统 + IMU/编码器
+        -> 坐标变换与模式判断
+        -> 麦轮运动学与 PID/CAN
+        -> 电机执行与姿态反馈
 ```
 
-## 2. 小陀螺模式
-
-小陀螺模式的本质是：**底盘持续提供角速度 `omega`，云台通过独立的 Yaw/Pitch 闭环保持自己的目标角度**。因此底盘可以自转或边移动边自转，而云台仍能保持观察方向。
-
-论文测试中使用过 `3 rad/s` 和 `7 rad/s` 两种自转速度。该模式连续、响应直接，但机器人位置大致不变，装甲可能周期性回到原受击位置；持续攻击时，功耗和重复受击风险会增加。
-
-### 小陀螺演示
-
-视频展示底盘持续旋转时云台保持独立朝向：
-
-[打开小陀螺v8.mp4](./paper_data/小陀螺v8.mp4)
-
-## 3. 防御策略优化：冲击摆动
-
-![论文图4：底盘冲击摆动算法流程图](docs/paper_fig4_impact_swing_flowchart.png)
-
-图源：论文图 4。冲击摆动不是持续高速旋转，而是由受击事件触发的有限角度姿态调整：
-
-1. 读取云台 Yaw 与底盘的相对角 `theta`，完成 X/Y 速度坐标变换。
-2. 轮询裁判系统伤害数据，判断是否发生弹丸打击或装甲受伤。
-3. 受击时将目标旋转角增加约 `30°`，再进行角度限幅和 Z 轴 PID 控制。
-4. 未受击时保持目标角度不变，即 `omega = 0`；受击时只短时改变底盘姿态。
-5. 对 X/Y 平移速度进行限幅并解算四个麦轮速度，保证防御动作不完全打断运动。
-
-这种优化的核心是改变攻击方向与装甲之间的重复几何关系：受击后主动换面，减少同一位置连续受击；同时通过坐标变换和云台独立控制，保留移动、观察和反击能力。
-
-### 冲击摆动演示
-
-视频展示底盘受到冲击后短时摆动，并保持云台相对朝向：
-
-[打开冲击摆动v7.mp4](./paper_data/冲击摆动v7.mp4)
-
-## 4. 关键运动学关系
-
-云台坐标系到车体坐标系的速度变换：
+云台坐标系到车体坐标系的速度变换为：
 
 ```text
 X = X0 * cos(theta) - Y0 * sin(theta)
 Y = X0 * sin(theta) + Y0 * cos(theta)
 ```
 
-麦轮速度解算：
+麦轮速度根据平移速度和角速度解算：
 
 ```text
-V1 = -Vx - Vy + a * omega
-V2 =  Vx - Vy + a * omega
-V3 =  Vx + Vy + a * omega
-V4 = -Vx + Vy + a * omega
+V1 = -Vx - Vy + a * omega    V2 =  Vx - Vy + a * omega
+V3 =  Vx + Vy + a * omega    V4 = -Vx + Vy + a * omega
 ```
 
-其中 `a` 是考虑云台安装位置不在底盘几何中心后的修正因子。
+其中 `a` 用于修正云台安装位置偏离底盘几何中心带来的影响。
 
-## 5. 论文测试结论
+## 2. 小陀螺模式
 
-以下图像均直接截取自论文图 8、图 9 和图 10，未根据 `data.mat` 重新绘制：
+小陀螺模式通过底盘持续输出角速度 `omega`，并由云台独立的 Yaw/Pitch 闭环保持目标指向。因此，机器人可以原地或边移动边持续自转，而云台仍能保持稳定朝向。
 
-### 5.1 冲击摆动模式
+测试采用了 `3 rad/s` 和 `7 rad/s` 两种自转速度。该模式响应直接、连续性好，但机器人整体位置变化有限，装甲可能周期性暴露在相同攻击方向；长时间运行会带来更高功耗和重复受击风险。
 
-![论文图8：底盘冲击摆动模式功率血量变化曲线](docs/paper_fig8_impact_power_hp.png)
+**演示视频：**底盘持续旋转时，云台通过独立控制保持稳定朝向。
 
-机器人初始血量为 300，最终血量为 210，受到小弹丸攻击 9 次；受击时底盘功率出现约 100 W 峰值，随后快速回落。
+<video src="https://github.com/user-attachments/assets/08e6c448-c87f-4425-8e33-f922234ac4d9" controls muted playsinline width="100%"></video>
 
-### 5.2 小陀螺低速模式（3 rad/s）
+## 3. 防御策略优化：冲击摆动
 
-![论文图9：底盘小陀螺低速 3 rad/s 功率血量变化曲线](docs/paper_fig9_low_gyro_power_hp.png)
+<div align="center">
+  <img src="docs/paper_fig4_impact_swing_flowchart.png" alt="底盘冲击摆动算法流程图" width="50%">
+</div>
 
-底盘功率稳定在约 20 W，机器人血量由 300 降至 60，受到小弹丸攻击 24 次。
+冲击摆动由装甲受击事件触发，不进行持续高速旋转。系统检测裁判系统伤害数据后，将底盘目标角短时增加约 `30°`，经角度限幅和 Z 轴 PID 控制后完成姿态调整；未受击时保持目标角不变，即 `omega = 0`。同时，X/Y 平移速度经过限幅并参与麦轮解算，保证防御动作不会完全打断移动。
 
-### 5.3 小陀螺高速模式（7 rad/s）
+该策略通过主动换面改变攻击方向与装甲之间的重复几何关系，减少同一位置连续受击，并结合坐标变换和云台独立控制保留移动、观察和反击能力。
 
-![论文图10：小陀螺高速转动 7 rad/s 功率血量变化曲线](docs/paper_fig10_high_gyro_power_hp.png)
+**演示视频：**底盘受到冲击后短时摆动，同时保持云台相对朝向。
 
-底盘功率约为 50-60 W，机器人血量由 300 降至 160，受到小弹丸攻击 14 次；启停瞬间存在较大的电流冲击。
+<video src="https://github.com/user-attachments/assets/79302a20-8d44-4794-a30f-9dff6ffb32bb" controls muted playsinline width="100%"></video>
 
-综合论文测试结果，冲击摆动的血量损失和受击次数最低，更适合受到攻击时快速换面；小陀螺适合连续机动和主动防御。
+## 4. 论文测试结论
 
-## 6. 整体工程内容
+测试结果表明，冲击摆动在相近条件下的掉血量和受击次数最低，更适合受击后的快速换面；小陀螺则更适合连续机动和主动防御。
 
-这是一个“CubeMX 配置 + STM32 底层代码 + FreeRTOS 任务 + 机器人控制算法”的完整固件工程：
+<div align="center">
+  <img src="docs/paper_fig8_impact_power_hp.png" alt="底盘冲击摆动模式功率血量变化曲线" width="50%">
+</div>
+
+冲击摆动模式下，机器人血量由 300 降至 210，受到小弹丸攻击 9 次；受击时底盘功率出现约 100 W 峰值，随后快速回落。
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>小陀螺低速模式（3 rad/s）</strong><br>
+      <img src="docs/paper_fig9_low_gyro_power_hp.png" alt="底盘小陀螺低速 3 rad/s 功率血量变化曲线" width="100%"><br>
+      <sub>功率稳定在约 20 W，血量由 300 降至 60，受到小弹丸攻击 24 次。</sub>
+    </td>
+    <td align="center" width="50%">
+      <strong>小陀螺高速模式（7 rad/s）</strong><br>
+      <img src="docs/paper_fig10_high_gyro_power_hp.png" alt="小陀螺高速转动 7 rad/s 功率血量变化曲线" width="100%"><br>
+      <sub>功率约为 50–60 W，血量由 300 降至 160，受到小弹丸攻击 14 次；启停瞬间存在较大电流冲击。</sub>
+    </td>
+  </tr>
+</table>
+
+## 5. 整体工程内容
+
+这是一个由 CubeMX 配置、STM32 底层代码、FreeRTOS 任务和机器人控制算法组成的完整固件工程：
 
 ```text
 standard_robot.ioc -> Src/Inc + Drivers/Middlewares -> bsp/components -> application -> MDK-ARM
@@ -120,33 +114,19 @@ standard_robot.ioc -> Src/Inc + Drivers/Middlewares -> bsp/components -> applica
 
 | 目录/文件 | 作用 |
 | --- | --- |
-| `standard_robot.ioc` | STM32CubeMX 引脚、时钟、CAN、串口、SPI/I2C、定时器、DMA 和 FreeRTOS 配置。 |
+| `standard_robot.ioc` | STM32CubeMX 引脚、时钟、通信接口、定时器、DMA 和 FreeRTOS 配置。 |
 | `Src/`、`Inc/` | HAL 外设初始化、系统时钟、中断和启动代码。 |
 | `Drivers/`、`Middlewares/` | STM32F4 HAL/CMSIS、FreeRTOS 和 USB CDC。 |
 | `bsp/`、`components/` | 板级接口、传感器驱动、PID、AHRS 和通用数据结构。 |
 | `application/` | 底盘、云台、IMU、裁判系统、射击和故障检测任务。 |
 | `MDK-ARM/standard_robot.uvprojx` | Keil MDK-ARM V5 编译、下载和调试工程。 |
 
-`main.c` 完成外设初始化，`freertos.c` 创建任务并启动调度器。关键控制任务包括：
+关键任务包括：`INS_task` 负责 IMU 与姿态解算，`gimbal_task` 负责云台闭环，`chassis_task` 负责麦轮运动、底盘 PID 和防御模式，`referee_usart_task` 负责裁判系统通信，`detect_task` 负责状态与故障检测。
 
-| 任务 | 作用 |
-| --- | --- |
-| `INS_task` | IMU 读取与姿态解算 |
-| `gimbal_task` | Yaw/Pitch 云台闭环 |
-| `chassis_task` | 麦轮运动、底盘 PID 和防御模式 |
-| `referee_usart_task` | 裁判系统数据接收 |
-| `detect_task` | 在线状态与故障检测 |
-| `shoot/servo/voltage/OLED/USB` | 射击、舵机、监测、显示和调试 |
+**编译流程：**
 
-底盘和云台任务分别读取遥控器、IMU、编码器和裁判系统数据，经过行为模式选择、PID 计算后，通过 CAN 向电机发送控制电流。小陀螺和冲击摆动复用同一套底盘驱动与运动学接口。
-
-### 编译流程
-
-1. 用 STM32CubeMX 打开 `standard_robot.ioc` 并生成底层代码。
-2. 用 Keil 打开 `MDK-ARM/standard_robot.uvprojx`。
+1. 使用 STM32CubeMX 打开 `standard_robot.ioc` 并生成底层代码。
+2. 使用 Keil 打开 `MDK-ARM/standard_robot.uvprojx`。
 3. 编译、下载并在线调试机器人固件。
 
-当前工程目标为 STM32F407、168 MHz，使用双 CAN、FreeRTOS 和 MDK-ARM V5。修改 `.ioc` 后应同步检查 Keil 工程的源文件列表。
-固件调试时应优先确认 `theta` 的零点、正方向、角度单位，以及麦轮编号与电调 ID 是否一致。
-
-## 7. 参考
+当前工程目标为 STM32F407、168 MHz，使用双 CAN、FreeRTOS 和 MDK-ARM V5。修改 `.ioc` 后，应同步检查 Keil 工程的源文件列表，并确认 `theta` 的零点、正方向、角度单位以及麦轮编号与电调 ID。
