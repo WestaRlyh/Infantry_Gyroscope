@@ -44,12 +44,7 @@
 
 视频展示底盘持续旋转时云台保持独立朝向：
 
-<video controls width="720" preload="metadata">
-  <source src="./paper_data/小陀螺v8.mp4" type="video/mp4">
-  当前查看器不支持直接播放，请<a href="./paper_data/小陀螺v8.mp4">打开小陀螺v8.mp4</a>。
-</video>
-
-[打开或下载：小陀螺v8.mp4](./paper_data/小陀螺v8.mp4)
+[打开小陀螺v8.mp4](./paper_data/小陀螺v8.mp4)
 
 ## 3. 防御策略优化：冲击摆动
 
@@ -69,12 +64,7 @@
 
 视频展示底盘受到冲击后短时摆动，并保持云台相对朝向：
 
-<video controls width="720" preload="metadata">
-  <source src="./paper_data/冲击摆动v7.mp4" type="video/mp4">
-  当前查看器不支持直接播放，请<a href="./paper_data/冲击摆动v7.mp4">打开冲击摆动v7.mp4</a>。
-</video>
-
-[打开或下载：冲击摆动v7.mp4](./paper_data/冲击摆动v7.mp4)
+[打开冲击摆动v7.mp4](./paper_data/冲击摆动v7.mp4)
 
 ## 4. 关键运动学关系
 
@@ -98,17 +88,27 @@ V4 = -Vx + Vy + a * omega
 
 ## 5. 论文测试结论
 
-在论文给出的持续攻击测试中，冲击摆动的综合防御效果优于小陀螺：
+以下图像均直接截取自论文图 8、图 9 和图 10，未根据 `data.mat` 重新绘制：
 
-| 模式 | 功率特征 | 血量变化 | 受击次数 |
-| --- | --- | ---: | ---: |
-| 冲击摆动 | 受击瞬间约 100 W 峰值，随后接近 0 | 300 -> 210 | 9 |
-| 小陀螺，3 rad/s | 约 20 W 持续功率 | 300 -> 60 | 24 |
-| 小陀螺，7 rad/s | 约 50-60 W，启停有电流冲击 | 300 -> 160 | 14 |
+### 5.1 冲击摆动模式
 
-结论：小陀螺适合连续机动和主动防御；冲击摆动更适合受到攻击时快速换面，在相近测试条件下掉血更少。
+![论文图8：底盘冲击摆动模式功率血量变化曲线](docs/paper_fig8_impact_power_hp.png)
 
-![paper_data 中 MAT 数据的原始变量对比](docs/performance_comparison.png)
+机器人初始血量为 300，最终血量为 210，受到小弹丸攻击 9 次；受击时底盘功率出现约 100 W 峰值，随后快速回落。
+
+### 5.2 小陀螺低速模式（3 rad/s）
+
+![论文图9：底盘小陀螺低速 3 rad/s 功率血量变化曲线](docs/paper_fig9_low_gyro_power_hp.png)
+
+底盘功率稳定在约 20 W，机器人血量由 300 降至 60，受到小弹丸攻击 24 次。
+
+### 5.3 小陀螺高速模式（7 rad/s）
+
+![论文图10：小陀螺高速转动 7 rad/s 功率血量变化曲线](docs/paper_fig10_high_gyro_power_hp.png)
+
+底盘功率约为 50-60 W，机器人血量由 300 降至 160，受到小弹丸攻击 14 次；启停瞬间存在较大的电流冲击。
+
+综合论文测试结果，冲击摆动的血量损失和受击次数最低，更适合受到攻击时快速换面；小陀螺适合连续机动和主动防御。
 
 ## 6. 整体工程内容
 
@@ -130,7 +130,7 @@ standard_robot.ioc -> Src/Inc + Drivers/Middlewares -> bsp/components -> applica
 `main.c` 完成外设初始化，`freertos.c` 创建任务并启动调度器。关键控制任务包括：
 
 | 任务 | 作用 |
-| --- | --- | --- |
+| --- | --- |
 | `INS_task` | IMU 读取与姿态解算 |
 | `gimbal_task` | Yaw/Pitch 云台闭环 |
 | `chassis_task` | 麦轮运动、底盘 PID 和防御模式 |
