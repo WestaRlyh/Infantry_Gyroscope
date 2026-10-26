@@ -1,4 +1,4 @@
-# Infantry_Gyroscope
+# 步兵小陀螺防御策略优化
 
 本项目面向 RoboMaster 步兵机器人底盘控制，围绕两种相互独立的运动模式展开：
 
@@ -63,7 +63,7 @@ V3 =  Vx + Vy + a * omega    V4 = -Vx + Vy + a * omega
 
 **演示视频：**底盘持续旋转时，云台通过独立控制保持稳定朝向。
 
-<video src="https://github.com/user-attachments/assets/08e6c448-c87f-4425-8e33-f922234ac4d9" controls muted playsinline width="100%"></video>
+<video src="https://github.com/user-attachments/assets/3073a924-cd4a-4523-9fd4-6243b8295d3b" controls muted playsinline width="100%"></video>
 
 ## 3. 防御策略优化：冲击摆动
 
@@ -77,7 +77,7 @@ V3 =  Vx + Vy + a * omega    V4 = -Vx + Vy + a * omega
 
 **演示视频：**底盘受到冲击后短时摆动，同时保持云台相对朝向。
 
-<video src="https://github.com/user-attachments/assets/79302a20-8d44-4794-a30f-9dff6ffb32bb" controls muted playsinline width="100%"></video>
+<video src="https://github.com/user-attachments/assets/1f7fb40a-1c4e-4899-b63d-045c3189bfca" controls muted playsinline width="100%"></video>
 
 ## 4. 论文测试结论
 
