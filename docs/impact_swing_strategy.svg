@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L10,3 L0,6 Z" fill="#355070"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#1d3557" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="820" fill="#f6f8fb"/>
+  <text x="60" y="58" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="32" font-weight="700" fill="#172b4d">底盘冲击摆动策略</text>
+  <text x="60" y="92" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="17" fill="#5b6b82">事件触发有限角度旋转，改变受击面，同时保持平移方向与云台朝向</text>
+
+  <rect x="60" y="145" width="230" height="92" rx="46" fill="#dbeafe" stroke="#4f86c6" stroke-width="3" filter="url(#shadow)"/>
+  <text x="175" y="185" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="22" font-weight="700" fill="#205493">冲击摆动模式</text>
+  <text x="175" y="213" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="15" fill="#5b6b82">进入模式 / 循环控制</text>
+
+  <rect x="395" y="145" width="250" height="92" rx="14" fill="#ffffff" stroke="#7aa7d9" stroke-width="2" filter="url(#shadow)"/>
+  <text x="520" y="185" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="21" font-weight="700" fill="#172b4d">读取相对角 theta</text>
+  <text x="520" y="213" text-anchor="middle" font-family="Arial" font-size="15" fill="#5b6b82">Yaw_gimbal - Yaw_chassis</text>
+
+  <rect x="750" y="145" width="330" height="92" rx="14" fill="#ffffff" stroke="#7aa7d9" stroke-width="2" filter="url(#shadow)"/>
+  <text x="915" y="185" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="21" font-weight="700" fill="#172b4d">速度坐标变换</text>
+  <text x="915" y="213" text-anchor="middle" font-family="Arial" font-size="15" fill="#5b6b82">将 Vx0, Vy0 变换到车体坐标</text>
+  <path d="M290 191 L395 191" stroke="#355070" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M645 191 L750 191" stroke="#355070" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <rect x="60" y="330" width="330" height="230" rx="18" fill="#fff4e6" stroke="#e2a45b" stroke-width="2" filter="url(#shadow)"/>
+  <text x="225" y="370" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="23" font-weight="700" fill="#9a5b13">裁判系统伤害数据</text>
+  <text x="225" y="414" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="18" fill="#172b4d">弹丸打击 / 受到撞击</text>
+  <path d="M225 430 L225 505" stroke="#e2a45b" stroke-width="5" marker-end="url(#arrow)"/>
+  <text x="225" y="538" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="17" fill="#5b6b82">仅受击时触发摆动</text>
+
+  <polygon points="600,330 760,425 600,520 440,425" fill="#ffffff" stroke="#d18b39" stroke-width="3" filter="url(#shadow)"/>
+  <text x="600" y="416" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="21" font-weight="700" fill="#172b4d">是否检测到受击?</text>
+  <text x="600" y="448" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="16" fill="#5b6b82">伤害 / 撞击事件</text>
+  <path d="M390 445 L440 445" stroke="#355070" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="410" y="430" text-anchor="middle" font-family="Arial" font-size="15" fill="#355070">event</text>
+
+  <rect x="865" y="330" width="275" height="230" rx="18" fill="#e9f7ef" stroke="#68b684" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1002" y="370" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="22" font-weight="700" fill="#247447">未受击</text>
+  <text x="1002" y="413" text-anchor="middle" font-family="Arial" font-size="20" fill="#172b4d">target_angle = const</text>
+  <text x="1002" y="456" text-anchor="middle" font-family="Arial" font-size="20" fill="#172b4d">omega = 0</text>
+  <text x="1002" y="510" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="16" fill="#5b6b82">退化为正常移动</text>
+  <path d="M760 425 L865 425" stroke="#355070" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="812" y="408" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="15" fill="#355070">否</text>
+
+  <rect x="395" y="625" width="410" height="105" rx="16" fill="#fff0f0" stroke="#db6b6b" stroke-width="2" filter="url(#shadow)"/>
+  <text x="600" y="664" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="22" font-weight="700" fill="#9c2c2c">目标角增加约 30°</text>
+  <text x="600" y="696" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="16" fill="#5b6b82">角度限幅 -> Z 轴 PID -> 角速度限幅</text>
+  <path d="M600 520 L600 625" stroke="#355070" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="622" y="582" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="15" fill="#355070">是</text>
+
+  <rect x="60" y="625" width="250" height="105" rx="16" fill="#e8f1fb" stroke="#7aa7d9" stroke-width="2"/>
+  <text x="185" y="664" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="20" font-weight="700" fill="#205493">麦轮速度解算</text>
+  <text x="185" y="696" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="16" fill="#5b6b82">V1...V4 -> PID / CAN</text>
+  <path d="M395 678 L310 678" stroke="#355070" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <rect x="895" y="625" width="245" height="105" rx="16" fill="#e9f7ef" stroke="#68b684" stroke-width="2"/>
+  <text x="1017" y="664" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="20" font-weight="700" fill="#247447">更新 theta</text>
+  <text x="1017" y="696" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="16" fill="#5b6b82">云台继续保持朝向</text>
+  <path d="M805 678 L895 678" stroke="#355070" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <path d="M1017 625 C1135 600 1135 270 915 237" fill="none" stroke="#68b684" stroke-width="3" stroke-dasharray="10 8" marker-end="url(#arrow)"/>
+  <text x="1100" y="300" transform="rotate(-90 1100 300)" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="15" fill="#247447">实时更新相对角</text>
+
+  <rect x="60" y="770" width="1080" height="34" rx="8" fill="#172b4d"/>
+  <text x="600" y="794" text-anchor="middle" font-family="Microsoft YaHei, Noto Sans CJK SC, Arial" font-size="16" fill="#ffffff">防御目标：改变受击面 + 保持运动方向 + 不牺牲云台观察/反击能力</text>
+</svg>
