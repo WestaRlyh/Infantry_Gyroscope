@@ -61,9 +61,9 @@ V3 =  Vx + Vy + a * omega    V4 = -Vx + Vy + a * omega
 
 测试采用了 `3 rad/s` 和 `7 rad/s` 两种自转速度。该模式响应直接、连续性好，但机器人整体位置变化有限，装甲可能周期性暴露在相同攻击方向；长时间运行会带来更高功耗和重复受击风险。
 
-**演示视频：**底盘持续旋转时，云台通过独立控制保持稳定朝向。
+<strong>演示视频：</strong>底盘持续旋转时，云台通过独立控制保持稳定朝向。
 
-<video src="https://github.com/user-attachments/assets/3073a924-cd4a-4523-9fd4-6243b8295d3b" controls muted playsinline width="100%"></video>
+<video src="https://cdn.jsdelivr.net/gh/WestaRlyh/Infantry_Gyroscope@7215fec/paper_data/Gyroscope.mp4" controls muted playsinline preload="metadata" width="100%"></video>
 
 ## 3. 防御策略优化：冲击摆动
 
@@ -75,9 +75,9 @@ V3 =  Vx + Vy + a * omega    V4 = -Vx + Vy + a * omega
 
 该策略通过主动换面改变攻击方向与装甲之间的重复几何关系，减少同一位置连续受击，并结合坐标变换和云台独立控制保留移动、观察和反击能力。
 
-**演示视频：**底盘受到冲击后短时摆动，同时保持云台相对朝向。
+<strong>演示视频：</strong>底盘受到冲击后短时摆动，同时保持云台相对朝向。
 
-<video src="https://github.com/user-attachments/assets/1f7fb40a-1c4e-4899-b63d-045c3189bfca" controls muted playsinline width="100%"></video>
+<video src="https://cdn.jsdelivr.net/gh/WestaRlyh/Infantry_Gyroscope@7215fec/paper_data/Impact%20Swing.mp4" controls muted playsinline preload="metadata" width="100%"></video>
 
 ## 4. 论文测试结论
 
