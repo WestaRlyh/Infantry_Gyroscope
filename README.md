@@ -63,7 +63,9 @@ V3 =  Vx + Vy + a * omega    V4 = -Vx + Vy + a * omega
 
 <strong>演示视频：</strong>底盘持续旋转时，云台通过独立控制保持稳定朝向。
 
-<p><a href="https://cdn.jsdelivr.net/gh/WestaRlyh/Infantry_Gyroscope@7215fec/paper_data/Gyroscope.mp4">▶ 播放小陀螺演示视频（MP4）</a></p>
+<p align="center">
+  <img src="paper_data/Gyroscope.gif" alt="小陀螺模式演示动画" width="100%">
+</p>
 
 ## 3. 防御策略优化：冲击摆动
 
@@ -77,7 +79,9 @@ V3 =  Vx + Vy + a * omega    V4 = -Vx + Vy + a * omega
 
 <strong>演示视频：</strong>底盘受到冲击后短时摆动，同时保持云台相对朝向。
 
-<p><a href="https://cdn.jsdelivr.net/gh/WestaRlyh/Infantry_Gyroscope@7215fec/paper_data/Impact%20Swing.mp4">▶ 播放冲击摆动演示视频（MP4）</a></p>
+<p align="center">
+  <img src="paper_data/Impact_Swing.gif" alt="冲击摆动模式演示动画" width="100%">
+</p>
 
 ## 4. 论文测试结论
 
